@@ -1,4 +1,6 @@
 <?php
+
+// Evita el acceso directo al archivo desde la web.
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -11,10 +13,13 @@ if (!defined('_PS_VERSION_')) {
  */
 class MyCustomHeadCode extends Module {
 
+    // Propiedad para almacenar el código en caché.
+    private $customCodeCache = null;
+
     public function __construct() {
         $this->name = 'mycustomheadcode'; 
         $this->tab = 'front_office_features';
-        $this->version = '1.3';
+        $this->version = '1.4';
         $this->author = 'Jesús Fernández Ávila';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
@@ -35,12 +40,24 @@ class MyCustomHeadCode extends Module {
         return parent::uninstall();
     }
 
+    /**
+     * Hook "displayHeader".
+     * Si el código no está en caché, lee el contenido del archivo config.html.
+     * 
+     * @return string Código HTML.
+     */
     public function hookDisplayHeader() {
-        $filePath = $this->local_path . 'config.html';
-        if (file_exists($filePath)) {
-            $customCode = file_get_contents($filePath);
-            return $customCode;
+        // Si el código no está en caché, lo leemos del archivo.
+        if (is_null($this->customCodeCache)) {
+            $filePath = $this->local_path . 'config.html';
+            if (file_exists($filePath)) {
+                $this->customCodeCache = file_get_contents($filePath);
+            } else {
+                // Registra un error si el archivo no se encuentra.
+                PrestaShopLogger::addLog('MyCustomHeadCode: No se pudo encontrar el archivo config.html', 3, null, null, null, true);
+                $this->customCodeCache = '';
+            }
         }
-        return ''; // Retorna una cadena vacía si el archivo no existe
+        return $this->customCodeCache;
     }
 }
