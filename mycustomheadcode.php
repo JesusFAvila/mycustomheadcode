@@ -1,5 +1,4 @@
 <?php
-// Comprobar si el archivo no es accesible directamente desde la web.
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -7,15 +6,11 @@ if (!defined('_PS_VERSION_')) {
 /**
  * Clase MyCustomHeadCode
  * 
- * Este módulo se encarga de cargar el contenido del archivo config.html 
- * e insertarlo en la sección <head> de cada página de la tienda PrestaShop.
+ * Módulo para cargar contenido personalizado desde un archivo HTML 
+ * e insertarlo en la sección <head> de cada página de PrestaShop.
  */
 class MyCustomHeadCode extends Module {
 
-    /**
-     * Constructor del módulo.
-     * Define algunos parámetros básicos.
-     */
     public function __construct() {
         $this->name = 'mycustomheadcode'; 
         $this->tab = 'front_office_features';
@@ -29,39 +24,23 @@ class MyCustomHeadCode extends Module {
 
         $this->displayName = $this->l('My Custom Head Code');
         $this->description = $this->l('Añade código personalizado en el <head> de todas las páginas.');
-
         $this->confirmUninstall = $this->l('¿Estás seguro de que deseas desinstalar?');
     }
 
-    /**
-     * Método de instalación del módulo.
-     * Registra el hook "displayHeader" para añadir código al <head>.
-     * 
-     * @return bool True si la instalación fue exitosa, de lo contrario False.
-     */
     public function install() {
         return parent::install() && $this->registerHook('displayHeader');
     }
 
-    /**
-     * Método de desinstalación del módulo.
-     * 
-     * @return bool True si la desinstalación fue exitosa, de lo contrario False.
-     */
     public function uninstall() {
         return parent::uninstall();
     }
 
-    /**
-     * Hook "displayHeader".
-     * Lee el contenido del archivo config.html e inserta el código en el <head> 
-     * de cada página.
-     * 
-     * @return string Código HTML.
-     */
     public function hookDisplayHeader() {
-        $customCode = file_get_contents($this->local_path . 'config.html');
-        return $customCode;
+        $filePath = $this->local_path . 'config.html';
+        if (file_exists($filePath)) {
+            $customCode = file_get_contents($filePath);
+            return $customCode;
+        }
+        return ''; // Retorna una cadena vacía si el archivo no existe
     }
 }
-?>
